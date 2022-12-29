@@ -9,6 +9,6 @@ PyProtif is a plugin for the PyMOL molecular visualization program; it automatic
 * Click the tab 'Install new plugin' and then the button 'Choose file', select the source code you just downloaded. 
 * Accept the default plugin installation directory or change to your preference
 
-You should now have the entry `*PLUGIN NAME*` in your 'Plugin' menu then 'Legacy Plugins'. 
+You should now have the entry *`PLUGIN NAME`* in your 'Plugin' menu then 'Legacy Plugins'. 
 
 Python routines were added at the top of the plugin source code to install the libraries that are not found in the default setup of Python to avoid errors during the initialization of the plugin (like the `requests` and `selenium` modules).
