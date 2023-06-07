@@ -24,7 +24,7 @@ After clicking the `'Run'` button, the plugin will automatically
 
 4. create an extensively organized and expandable menu of objects (down to every motif itself) within PyMOL object control panel, allowing users to easily control and manipulate these motifs.
 
-![results](C:\Users\rebeh\OneDrive%20-%20Lebanese%20American%20University\Documents\manuscripts%20in%20progress\Plugin_Motifs\AMAC_Submission\Revision\Tutorial\Images\fetching.png)
+<img src="Images/fetching.png" title="" alt="Fetching the data" data-align="center">
 
 ---
 
