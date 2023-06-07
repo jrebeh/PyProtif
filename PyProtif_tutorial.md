@@ -2,7 +2,11 @@
 
 After installing the PyProtif plugin through the PyMOL's plugin manager (following the installation instructions provided in the README.md file), you can launch the plugin by navigating to the `'Legacy Plugins'` under the `'Plugin'` menu in PyMOL (see figure below). In this menu, you will find the PyProtif plugin along with other installed plugins. However, make sure that the option to load the plugin on startup is selected.
 
+<img src="https://lauedu74602-my.sharepoint.com/:f:/g/personal/joseph_rebehmed_lau_edu_lb/EozD13kwapxJk2DjW8dzL-gBW1WbO9EehttnwRTOXEGFtQ?e=Y7j6U6/where_find_plugin.png" title="" alt="How to launch the plugin" data-align="center">
+
 <img src="file:///C:/Users/rebeh/OneDrive%20-%20Lebanese%20American%20University/Documents/manuscripts%20in%20progress/Plugin_Motifs/AMAC_Submission/Revision/Tutorial/Images/where_find_plugin.png" title="" alt="How to launch the plugin" data-align="center">
+
+
 
 <br>For the example below, we have used two proteins from the Baeyer-Villiger monooxygenase (BVMO) protein family: Cyclohexanone Monooxygenase (CHMO, PDB code 3GWD) and Phenylacetone Monooxygenase (PAMO, PDB code 1W4X).
 
