@@ -1,6 +1,6 @@
 # Authors: Gilbert El Khoury, Wael Azzam, Joseph Rebehmed
 # Supervised by: Joseph Rebehmed
-# Last modified: 31/12/2022
+# Last modified: 07/06/2023
 
 ######################### functions to install non-installed packages #########################################
 
@@ -24,6 +24,9 @@ from collections import OrderedDict
 def install_package(name):
 	subprocess.check_call(["pip", "install", name])
 
+if "window" in platform.platform(terse=True).lower():
+	from subprocess import CREATE_NO_WINDOW
+	
 if sys.version_info[0] < 3:
     import Tkinter as tk
     from Tkinter import *
@@ -45,7 +48,6 @@ try:
 	from selenium.webdriver.common.action_chains import ActionChains
 	from selenium.webdriver.common.keys import Keys
 	from selenium.webdriver.chrome.service import Service
-	from subprocess import CREATE_NO_WINDOW
 	chromedriver_autoinstaller.install()
 except:
 	install_package("selenium")
@@ -57,17 +59,10 @@ except:
 	from selenium.webdriver.common.action_chains import ActionChains
 	from selenium.webdriver.common.keys import Keys
 	from selenium.webdriver.chrome.service import Service
-	from subprocess import CREATE_NO_WINDOW
 	import chromedriver_autoinstaller
 	chromedriver_autoinstaller.install()
 
-try:
-	import plotly.express as px
-except:
-	install_package("pandas")
-	install_package("plotly")
-	import plotly.express as px
-	#webdriver-manager
+
 ########################## Motifs definition based on text processing ############################
  
 def sheets(line):
@@ -554,7 +549,7 @@ def readChains(pdb_id):
 def getPromotifData(pdb_id):
 	try:
 		pdb =  pdb_id.lower()
-		url  = "http://www.ebi.ac.uk/thornton-srv/databases/PDBsum/{:s}{:s}/{:s}/promotif.dat".format(pdb[1],pdb[2],pdb)
+		url="https://www.ebi.ac.uk/thornton-srv/databases/cgi-bin/pdbsum/GetText.pl?pdb={}&promotif_dat=TRUE".format(pdb)
 		result_page =  urllib.request.urlopen(url)
 		text  = result_page.read().decode('utf-8')
 		with open("PyProtif/"+pdb_id.lower()+"/Structural_motifs/"+pdb_id.lower()+"_promotif_data.txt",'w') as f:
@@ -1244,131 +1239,6 @@ def processResultsTxt(pdb_id,eValPfam=1.0,eValCdd=1.0,database="pfam"):
 					outfile.close()
 	return 0
 
-def searchForFunctionalMotifs(keyword):
-	global driver
-	#https://pfam.xfam.org/family/PF00104#tabview=tab8
-	#http://pfam.xfam.org/search#tabview=tab2
-	#//*[@id="fstrucph"]
-	keyword=keyword.lower()
-	if "window" in system.lower():
-		service=Service()
-		service.creationflags = CREATE_NO_WINDOW
-		driver = webdriver.Chrome(service=service)
-	else:
-		service=Service()
-		driver = webdriver.Chrome(service=service)
-	driver.maximize_window()
-	driver.set_window_position(-10000,0)
-	driver.get("http://pfam-legacy.xfam.org/search")
-	keywordSearch=WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id=\"searchKeywordBlockSelector\"]/a")))
-	keywordSearch.click()
-	keywordField=driver.find_element(by=By.XPATH,value="//*[@id=\"kwQuery\"]")
-	keywordField.clear()
-	keywordField.send_keys(keyword)
-	submitButton= WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id=\"keywordSearchForm\"]/div[2]/input[1]")))
-	submitButton.click()
-	try:
-		noResult=driver.find_element(by=By.XPATH, value="/html/body/div[5]/h1")
-		if noResult.text.lower()=="no results":
-			json_string = json.dumps({keyword:["no pfam found"]})
-			with open("PyProtif/"+keyword+"_pfamscan.json", 'w') as outfile:
-				outfile.write(json_string)
-				outfile.close()
-			driver.close()
-			return ""
-	except:
-		try:
-			#//*[@id="pdbBlockSelector"]/a
-			structuresTab=  WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id=\"pdbBlockSelector\"]/a")))
-			try:
-				structuresTab.click()
-			except:
-				fmSearch[pfamId]=["no stucture was found"]
-				pfamId=driver.current_url.split("/")[-1].split("#")[0]
-				#"https://pfam.xfam.org/family/"+str(pfamId)+"#tabview=tab8)" 
-				#fmSearch["Link"]= "https://www.genome.jp/dbget-bin/www_bget?pf:"+pfamId
-				fmSearch["Link"]="https://pfam-legacy.xfam.org/family/"+str(pfamId)+"#tabview=tab8"
-				json_string = json.dumps(fmSearch)
-				with open("PyProtif/"+keyword+"_pfamscan.json", 'w') as outfile:
-					outfile.write(json_string)
-					outfile.close()
-				driver.close()
-				return "https://pfam-legacy.xfam.org/family/"+str(pfamId)+"#tabview=tab8"
-			fmSearch={}
-			pfamId=driver.current_url.split("/")[-1].split("#")[0]
-			fmSearch[pfamId]=[]
-			structures=[]
-			#WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id=\"structuresTable\"]/tbody/tr"))
-			loading = driver.find_element(by=By.XPATH, value="//*[@id=\"fstrucph\"]")
-			while loading:
-				try:
-					loading = driver.find_element(by=By.XPATH, value="//*[@id=\"fstrucph\"]")
-				except:
-					break
-			structuresRow = driver.find_elements(by=By.XPATH, value="//*[@id=\"structuresTable\"]/tbody/tr")
-			for structureRow in range(0,len(structuresRow)):
-				if len(driver.find_elements(by=By.XPATH, value="//*[@id=\"structuresTable\"]/tbody/tr["+str(structureRow+1)+"]/td")) < 6:
-					pass
-				else:
-					stucture=driver.find_element(by=By.XPATH, value="//*[@id=\"structuresTable\"]/tbody/tr["+str(structureRow+1)+"]/td[1]/a")
-					stucture2=driver.find_element(by=By.XPATH, value="//*[@id=\"structuresTable\"]/tbody/tr["+str(structureRow+1)+"]/td[1]")
-					actions=ActionChains(driver)
-					actions.move_to_element(stucture2).perform()
-					structures.append(stucture.get_attribute("text"))
-			fmSearch[pfamId]=structures
-			fmSearch["Link"]="https://pfam-legacy.xfam.org/family/"+str(pfamId)+"#tabview=tab8"
-			json_string = json.dumps(fmSearch)
-			with open("PyProtif/"+keyword+"_pfamscan.json", 'w') as outfile:
-				outfile.write(json_string)
-				outfile.close()
-			driver.close()
-			return "https://pfam-legacy.xfam.org/family/"+str(pfamId)+"#tabview=tab8"
-			#https://www.genome.jp/dbget-bin/www_bget?pf:PF17990
-		except:
-			try:
-				intermediate=driver.find_element(by=By.XPATH, value="//*[@id=\"resultTable\"]/tbody/tr[1]/td[2]/a")
-				intermediate.click()
-				structuresTab=  WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id=\"pdbBlockSelector\"]/a")))
-				structuresTab.click()
-			except:
-				fmSearch[pfamId]=["no stucture was found"]
-				pfamId=driver.current_url.split("/")[-1].split("#")[0]
-				fmSearch["Link"]= "https://pfam-legacy.xfam.org/family/"+str(pfamId)+"#tabview=tab8"
-				json_string = json.dumps(fmSearch)
-				with open("PyProtif/"+keyword+"_pfamscan.json", 'w') as outfile:
-					outfile.write(json_string)
-					outfile.close()
-				driver.close()
-				return "https://pfam-legacy.xfam.org/family/"+str(pfamId)+"#tabview=tab8"
-			fmSearch={}
-			pfamId=driver.current_url.split("/")[-1].split("#")[0]
-			fmSearch[pfamId]=[]
-			structures=[]
-			loading = driver.find_element(by=By.XPATH, value="//*[@id=\"fstrucph\"]")
-			while loading:
-				try:
-					loading = driver.find_element(by=By.XPATH, value="//*[@id=\"fstrucph\"]")
-				except:
-					break
-			structuresRow = driver.find_elements(by=By.XPATH, value="//*[@id=\"structuresTable\"]/tbody/tr")
-			for structureRow in range(0,len(structuresRow)):
-				if len(driver.find_elements(by=By.XPATH, value="//*[@id=\"structuresTable\"]/tbody/tr["+str(structureRow+1)+"]/td")) < 6:
-					pass
-				else:
-					stucture=driver.find_element(by=By.XPATH, value="//*[@id=\"structuresTable\"]/tbody/tr["+str(structureRow+1)+"]/td[1]/a")
-					stucture2=driver.find_element(by=By.XPATH, value="//*[@id=\"structuresTable\"]/tbody/tr["+str(structureRow+1)+"]/td[1]")
-					actions=ActionChains(driver)
-					actions.move_to_element(stucture2).perform()
-					structures.append(stucture.get_attribute("text"))
-			fmSearch[pfamId]=structures
-			fmSearch["Link"]= "https://pfam-legacy.xfam.org/family/"+str(pfamId)+"#tabview=tab8"
-			json_string = json.dumps(fmSearch)
-			with open("PyProtif/"+keyword+"_pfamscan.json", 'w') as outfile:
-				outfile.write(json_string)
-				outfile.close()
-			driver.close()
-			return "https://pfam-legacy.xfam.org/family/"+str(pfamId)+"#tabview=tab8"
-	
 def loadweb(url):
 	new = 1
 	webbrowser.open(url,new=new)
@@ -1513,7 +1383,7 @@ def cascade():
 		ordering={}
 		ordering["ncbi-cdd"]=""
 		ordering["pfam"]=""
-		pdb_ids = pdbIDField.get().split(" ")
+		pdb_ids = pdbIDField.get().strip().split(" ")
 		pdb_ids=list(set([pdb_i.lower() for pdb_i in pdb_ids]))
 		pdb_ids.sort()
 		invalidPDBs=[]
@@ -1553,6 +1423,9 @@ def cascade():
 					if code2==0:
 						summary=summarizeStruct(pdb_id)
 						summaryPopUp("Structural Motifs: "+pdb_id,summary,showButt=False)
+						with open("PyProtif/"+pdb_id+"/Structural_motifs/"+pdb_id+"_summary.txt","w") as f:
+							f.write(summary)
+						f.close()
 					else:
 						runCounts-=1
 						messagebox.showerror("Error", "Error loading the pdb: "+pdb_id+" file")
@@ -1570,6 +1443,9 @@ def cascade():
 							if code==0:
 								funcSummary=summarizeFunc(pdb_id,eValPfam=float(pfamEvalField.get()))
 								ordering=getFunctionalMotifOrdering(pdb_id,eValPfam=float(pfamEvalField.get()))
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 								imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_'+str(float(pfamEvalField.get()))+'_1.0.png'
 						if decisionDB==2:
 							foundPDBFunctLocalActualy = searchFileLocaly(pdb_id+'_cdd_1.0_'+str(float(cddEvalField.get()))+'.txt',path="/"+pdb_id+"/Functional_motifs")
@@ -1582,6 +1458,9 @@ def cascade():
 							if code==0:
 								funcSummary=summarizeFunc(pdb_id,eValCdd=float(cddEvalField.get()),database="cdd")
 								ordering=getFunctionalMotifOrdering(pdb_id,eValCdd=float(cddEvalField.get()),database="cdd")
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_cdd_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 								imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_cdd_1.0_'+str(float(cddEvalField.get()))+'.png'
 						if decisionDB==3:
 							foundPDBFunctLocalActualy = searchFileLocaly(pdb_id+'_pfam_cdd_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'.txt',path="/"+pdb_id+"/Functional_motifs")
@@ -1594,6 +1473,9 @@ def cascade():
 							if code ==0:
 								funcSummary=summarizeFunc(pdb_id,eValPfam=float(pfamEvalField.get()),eValCdd=float(cddEvalField.get()),database="pfam,cdd")
 								ordering=getFunctionalMotifOrdering(pdb_id,eValPfam=float(pfamEvalField.get()),eValCdd=float(cddEvalField.get()),database="pfam,cdd")
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_cdd_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 								imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_cdd_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'.png'
 					else:
 						imageFile=""
@@ -1603,6 +1485,9 @@ def cascade():
 							if code ==0:
 								funcSummary=summarizeFunc(pdb_id,eValPfam=float(pfamEvalField.get()))
 								ordering=getFunctionalMotifOrdering(pdb_id,eValPfam=float(pfamEvalField.get()))
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 								imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_'+pfamEvalField.get()+'_1.0.png'
 						if decisionDB==2:
 							code = functionalMotifs(pdb_id,eValCdd=float(cddEvalField.get()),database="cdd")
@@ -1610,6 +1495,9 @@ def cascade():
 							if code ==0:
 								funcSummary=summarizeFunc(pdb_id,eValCdd=float(cddEvalField.get()),database="cdd")
 								ordering=getFunctionalMotifOrdering(pdb_id,eValCdd=float(cddEvalField.get()),database="cdd")
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_cdd_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 								imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_cdd_1.0_'+cddEvalField.get()+'.png'
 						if decisionDB==3:
 							code = functionalMotifs(pdb_id,eValPfam=float(pfamEvalField.get()),eValCdd=float(cddEvalField.get()),database="pfam,cdd")
@@ -1617,6 +1505,9 @@ def cascade():
 							if code ==0:
 								funcSummary=summarizeFunc(pdb_id,eValPfam=float(pfamEvalField.get()),eValCdd=float(cddEvalField.get()),database="pfam,cdd")
 								ordering=getFunctionalMotifOrdering(pdb_id,eValPfam=float(pfamEvalField.get()),eValCdd=float(cddEvalField.get()),database="pfam,cdd")
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_cdd_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 								imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_cdd_'+pfamEvalField.get()+'_'+cddEvalField.get()+'.png'
 					if code ==0:
 						summaryPopUp("Functional Motifs: "+pdb_id,funcSummary,notShowImage=False,imgFile=imageFile,showButt=False)
@@ -1637,6 +1528,9 @@ def cascade():
 						if code ==0:
 							summary=summarizeStruct(pdb_id)
 							summaryPopUp("Structural Motifs: "+pdb_id,summary,showButt=False)
+							with open("PyProtif/"+pdb_id+"/Structural_motifs/"+pdb_id+"_summary.txt","w") as f:
+								f.write(summary)
+							f.close()
 						else:
 							runCounts-=1
 							messagebox.showerror("Error", "Error loading the pdb:  "+pdb_id+" file")
@@ -1648,18 +1542,27 @@ def cascade():
 							imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_'+pfamEvalField.get()+'_1.0.png'
 							if code2==0:
 								funcSummary=summarizeFunc(pdb_id,eValPfam=float(pfamEvalField.get()))
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 						if decisionDB==2:
 							code2=functionalMotifs(pdb_id,eValCdd=float(cddEvalField.get()),database="cdd")
 							ordering=getFunctionalMotifOrdering(pdb_id,eValCdd=float(cddEvalField.get()),database="cdd")
 							imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_cdd_1.0_'+cddEvalField.get()+'.png'
 							if code2==0:
 								funcSummary=summarizeFunc(pdb_id,eValCdd=float(cddEvalField.get()),database="cdd")
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_cdd_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 						if decisionDB==3:
 							code2=functionalMotifs(pdb_id,eValPfam=float(pfamEvalField.get()),eValCdd=float(cddEvalField.get()),database="pfam,cdd")
 							ordering=getFunctionalMotifOrdering(pdb_id,eValPfam=float(pfamEvalField.get()),eValCdd=float(cddEvalField.get()),database="pfam,cdd")
 							imageFile="PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_cdd_'+pfamEvalField.get()+'_'+cddEvalField.get()+'.png'
 							if code2==0:
 								funcSummary=summarizeFunc(pdb_id,eValPfam=float(pfamEvalField.get()),eValCdd=float(cddEvalField.get()),database="pfam,cdd")
+								with open("PyProtif/"+pdb_id+"/Functional_motifs/"+pdb_id+'_pfam_cdd_'+str(float(pfamEvalField.get()))+'_'+str(float(cddEvalField.get()))+'_summary.txt',"w") as f:
+									f.write(funcSummary)
+								f.close()
 						if code2==0:
 							summaryPopUp("Functional Motifs: "+pdb_id,funcSummary,notShowImage=False,imgFile=imageFile,showButt=False)
 						else:
@@ -1794,26 +1697,6 @@ def summaryPopUp(string,data,notShowImage=True,imgFile="",showButt=False):
 		Btn.pack_forget()
 	Main.configure(scrollregion=Main.bbox("all"))
 
-def runFMSearch():
-	global url
-	url=""
-	if FMField.get()=="":
-		messagebox.showerror("Error", "Please enter at least one Keyword to start")
-	else:
-		FMKeys = FMField.get().split(" ")
-		for FMKey in FMKeys:
-			FMKey=FMKey.lower().strip()
-			if FMKey!="":
-				if not searchFileLocaly(FMKey+"_pfamscan.json"):
-					url = searchForFunctionalMotifs(FMKey)
-					summary = summarizeFMSearch(FMKey)[0]
-					summaryPopUp("Functional Motifs for keyword: "+FMKey,summary,showButt=True)
-				else:
-					summary = summarizeFMSearch(FMKey)[0]
-					url = summarizeFMSearch(FMKey)[1]
-					summaryPopUp("Functional Motifs for keyword: "+FMKey,summary,showButt=True)
-
-
 def run():
 	global pdbIDField
 	global FMField
@@ -1876,12 +1759,6 @@ def run():
 	pdbIDField = Entry(root)
 	pdbIDField.grid(column =1, row =1)
 
-	# lbl4 = Label(root, text = "Search for Related uniprotID on pfam database\n using functional motifs")
-	# lbl4.grid(column =1, row =7)
-
-	# FMField = Entry(root)
-	# FMField.grid(column =1, row =8)
-
 	structM = tk.IntVar(value=1)
 	funcM = tk.IntVar()
 	pfamD = tk.IntVar()
@@ -1910,10 +1787,8 @@ def run():
 	cddDEval.set("1.0")
 	# button widget with blue color text insid3
 	btn = Button(root, text = "Run" ,fg = "blue", command=cascade)
-	# btn2 = Button(root, text = "Go" ,fg = "blue", command=runFMSearch)
 	# Set Button Grid
 	btn.grid(column=1, row=6)
-	# btn2.grid(column=1, row=9)
 	if not isConnected() and count==0:
 		messagebox.showwarning("Warning", "You are not connected to the internet restrict your usage to local files\n")
 		count+=1
