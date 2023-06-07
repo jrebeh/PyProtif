@@ -42,7 +42,7 @@ Next, to perform a comparative analysis of the overall architecture of the two p
 cealign 1w4x, 3gwd
 ```
 
-![superimposed](C:\Users\rebeh\OneDrive%20-%20Lebanese%20American%20University\Documents\manuscripts%20in%20progress\Plugin_Motifs\AMAC_Submission\Revision\Tutorial\Images\superimposed.png)
+<img src="Images/superimposed.png" title="" alt="Superimposed Structures" data-align="center">
 
 ---
 
@@ -65,8 +65,7 @@ set depth_cue, 0
 set orthoscopic, 1
 ```
 
-![superimposed_nice](C:\Users\rebeh\OneDrive%20-%20Lebanese%20American%20University\Documents\manuscripts%20in%20progress\Plugin_Motifs\AMAC_Submission\Revision\Tutorial\Images\superimposed-nice.png)
-
+<img src="Images/superimposed-nice.png" title="" alt="Nice Superimposed Structures" data-align="center">
 
 
 To showcase both proteins side by side, while preserving the same orientation obtained from the superposition, activate the objects 1W4X and 3GWD exclusively then execute the command `set grid_mode, 1` to display them in a grid layout. You can also do it manually by:
@@ -78,9 +77,7 @@ To showcase both proteins side by side, while preserving the same orientation ob
 3. dragging one of the proteins to the opposite side of the viewer by clicking the `middle mouse` button while holding down the `Shift` key.
 
 
-
-![final_figure](C:\Users\rebeh\OneDrive%20-%20Lebanese%20American%20University\Documents\manuscripts%20in%20progress\Plugin_Motifs\AMAC_Submission\Revision\Tutorial\Images\final.png)
-
+<img src="Images/final.png" title="" alt="Final Presentation" data-align="center">
 
 
 Lastly, adjust the size and position of the output windows that display the summary of the structural motifs for each protein, and proceed to save the figure.
