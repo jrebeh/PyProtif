@@ -12,7 +12,7 @@ After installing the PyProtif plugin through the PyMOL's plugin manager (followi
 
 The PyProtif plugin allows users to study simultaneously multiple proteins and to select and manipulate each motif separately through its expandable menu and user-friendly interface. Users have the option to fetch the structural and/or functional motifs either individually by specifying the corresponding PDB ID of the protein of interest, or collectively by specifying multiple PDB IDs separated by a space (as observed in the figure below).
 
-![input_gui](Images\input_gui.png)
+<img src="Images/input_gui.png" title="" alt="input GUI" data-align="center">
 
 After clicking the `'Run'` button, the plugin will automatically 
 
