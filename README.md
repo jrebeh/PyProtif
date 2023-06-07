@@ -12,7 +12,7 @@ PyProtif plugin is fully written in Python programming language (version 3.x). M
 
 To install the PyProtif plugin, follow these steps.
 
-1. Make sure you have PyMOL installed on your system. PyProtif requires PyMOL 2.3 or higher.
+1. Make sure you have PyMOL installed on your system. PyProtif requires PyMOL 2.X.
 2. The plugin utilizes the web scraping capabilities of Selenium libraries to retrieve the various motifs. Please ensure that the most recent stable version of Google Chrome Browser is installed on your system for optimal functionality.
 3. Download the source code by clicking on the green 'Code' button, then 'Download'.
 4. Open PyMOL, and in the menu bar click Plugin -> Plugin Manager
